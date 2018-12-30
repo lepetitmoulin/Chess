@@ -69,7 +69,7 @@ There is also the question of pawn promotion : if your pawn has traversed all th
     '[origin file][destination rank (8 if white, 1 if black)]=[desired promotion piece ('Q', 'R', 'B', or 'N')]'
     e.g. 'c8=Q' or 'd1=R'
 
-As of 29 December 2018, there is no functionality for offering draws, nor for pawn promotion. Theses function will be implemented soon.
+As of 29 December 2018, there is no functionality for offering draws. This function will be implemented soon.
 
 Theoretical draws will also need to be accounted for (e.g. instances of king+knight vs. king, king+bishop vs. king, king vs. king), as well as draws by repetition (if players repeat the same moves three times each, a draw is claimed).
 
