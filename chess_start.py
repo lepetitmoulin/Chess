@@ -1,8 +1,9 @@
 import copy #needed to make a 'dummy' board to determine if a move is legal
-
 ranks = '12345678'
 files = 'abcdefgh'
 wQR, wKR, wKing, bQR, bKR, bKing = 0,0,0,0,0,0 #weird looking -- but this is for castling purposes !
+
+
 en_passant = False
 colors = {'w': 'White', 'b':'Black'}
 enemies = {'w': 'b', 'b': 'w'}
@@ -28,9 +29,8 @@ def pieces(color, board):
     return {(i,j):board[i][j] for i in range(-8,0) for j in range(0,8) if 'w' in board[i][j]}
   else:
     return {(i,j):board[i][j] for i in range(-8,0) for j in range(0,8) if 'b' in board[i][j]}
-    
+
 def print_board(color):
-#prints the board based on perspective of current player (black or white)
   if color=='w':
     for r in range(8):
         for f in range(8):
@@ -42,19 +42,27 @@ def print_board(color):
         print(board[r][f], end = ' ')
       print('')
 
-def ConvertAlgtoTuple(move):
-    r=-int(move[-1])
-    f=files.index(move[-2])
+def convert_move(move):
+    if '=' not in move:
+      r=-int(move[-1])
+      f=files.index(move[-2])
+    else:
+      if 'x' not in move:
+        r=-int(move[1])
+        f=files.index(move[0])
+      else:
+        r = -int(move[3])
+        f = files.index(move[2])
     return (r,f)
 
 def getposition(move,piece,color, board):
     '''
-    move: str, the move made by the user (e.g. 'e4' or 'Bb5' or 'Nxc3')
+    square: tuple, the move made by the user converted from algebraic to tuple form (e.g. 'Bb5' -> (-5,1))
     piece: str of len(1), indicating the piece moved
     color: 'b' or 'w'
-    returns: tuple, position of the piece within board variable, calculated based on the move given
+    returns: tuple, position of the piece within board variable
     '''
-    square = ConvertAlgtoTuple(move)
+    square = convert_move(move)
     mover = color + piece
     if piece == 'N':
           pos_knight = []
@@ -132,29 +140,18 @@ def getposition(move,piece,color, board):
                   pos_rook.append(i[0])
                   pos_rook.append(i[1])
               break
-          elif board[i[0]][i[1]] == mover and isClearPath(square, (i[0],i[1])):
+          elif board[i[0]][i[1]] == mover and is_clear_path(square, (i[0],i[1])):
               pos_rook.append(i[0])
               pos_rook.append(i[1])
               break
         return pos_rook
-    elif piece == 'Q':
-        #should be reworked using pieces() function
-        pos_queen = [[r,f] for r in range(-8,0) for f in range(0,8) if board[r][f]==mover][0]
-        return pos_queen
-    elif piece == 'K':
-        #should be reworked using pieces() function
-        pos_king = [(r,f) for r in range (-8,0) for f in range(0,8) if board[r][f] == mover][0]
-        return pos_king
+    else:
+        #finding king or queen
+        for k,v in pieces(color, board).items():
+          if piece in v:
+            return k
 
 def getsquares(pos,piece,color, board, en_passant=False):
-      '''
-      pos : tuple, position of the moving piece
-      piece : str of length 1, the piece being moved
-      color : 'b' or 'w'
-      board : current board configuration, list of lists
-      en_passant : bool, whether an en passant capture is legal
-      returns: list of tuples indicating all possible squares to which the piece can legally move
-      '''
       if color == 'w':
           enem_color = 'b'
       else:
@@ -339,24 +336,24 @@ def getsquares(pos,piece,color, board, en_passant=False):
                   squares2.append((i[0], i[1]))
       return squares2
 
-def isLegalMove(move, piece, color, board, en_passant):
+def is_legal_move(move, piece, color, board, en_passant):
     current = getposition(move,piece,color, board)
     if current==[]:
       return False
     squares = getsquares(current,piece,color, board, en_passant)
-    move_tuple = ConvertAlgtoTuple(move)
+    move_tuple = convert_move(move)
     if move_tuple in squares:
         dummy = copy.deepcopy(board)
         dummy[move_tuple[0]][move_tuple[1]] =color+piece
         dummy[current[0]][current[1]]='e '
-        if inCheck(color, dummy):
+        if in_check(color, dummy):
           print('King is in check!')
           return False
         return True
     else:
         return False
 
-def inCheck(color, board, square=None):
+def in_check(color, board, square=None):
     if color == 'w':
         #checking to see if white king is in check
         if square==None:
@@ -383,9 +380,10 @@ def inCheck(color, board, square=None):
         
     return False
 
-def canCastle(color, move):
-    if inCheck(color, board):
+def castle_legal(color, move):
+    if in_check(color, board):
         return False
+    move=move.upper()
     
     if color == 'w' and wKing==0:
         if move == 'O-O' and wKR!=0:
@@ -395,10 +393,10 @@ def canCastle(color, move):
         r = -1
         if 'K' in board[r][4]:
             if move == 'O-O':
-                if isClearPath((r,4), (r,7)) and 'R' in board[r][7] and inCheck(color, board, (r,5))==False and inCheck(color, board, (r,6))==False:
+                if is_clear_path((r,4), (r,7)) and 'R' in board[r][7] and in_check(color, board, (r,5))==False and in_check(color, board, (r,6))==False:
                     return True
             elif move == 'O-O-O':
-                if isClearPath((r,4), (r,0)) and 'R' in board[r][0] and inCheck(color, board, (r,3))==False and inCheck(color, board, (r,2))==False:
+                if is_clear_path((r,4), (r,0)) and 'R' in board[r][0] and in_check(color, board, (r,3))==False and in_check(color, board, (r,2))==False:
                     return True
     elif color == 'b' and bKing==0:
         if move == 'O-O' and bKR!=0:
@@ -408,17 +406,17 @@ def canCastle(color, move):
         r = -8
         if 'K' in board[r][4]:
             if move == 'O-O':
-                if isClearPath((r,4), (r,7)) and 'R' in board[r][7] and inCheck(color, board, (r,5))==False and inCheck(color, board, (r,6))==False:
+                if is_clear_path((r,4), (r,7)) and 'R' in board[r][7] and in_check(color, board, (r,5))==False and in_check(color, board, (r,6))==False:
                     return True
             elif move == 'O-O-O':
-                if isClearPath((r,4), (r,0)) and 'R' in board[r][0] and inCheck(color, board, (r,3))==False and inCheck(color, board, (r,2))==False:
+                if is_clear_path((r,4), (r,0)) and 'R' in board[r][0] and in_check(color, board, (r,3))==False and in_check(color, board, (r,2))==False:
                     return True
     return False
         
-def isClearPath(square1, square2):
+def is_clear_path(square1, square2):
     '''
-    square1, square2 : tuples (rank, file)
-    returns: bool, True if all squares between two pieces are empty, False otherwise
+    input: square1, square2: tuples (rank, file)
+    returns: True if all squares between two pieces are empty, False otherwise
     preconditions: squares must be referentiable in the above board scheme
     '''
     r1,f1 = square1[0], square1[1]
@@ -468,11 +466,6 @@ def isClearPath(square1, square2):
         return True
 
 def castle_kingside(color, board):
-  '''
-  color : str, 'w' or 'b'
-  board : list of lists, board config
-  returns : nothing, only alters board to effectuate castling action
-  '''
   if color == 'w':
     r=-1
   else:
@@ -483,11 +476,6 @@ def castle_kingside(color, board):
   board[r][7] = 'e '
 
 def castle_queenside(color, board):
-  '''
-  color : str, 'w' or 'b'
-  board : list of lists, board config
-  returns : nothing, only alters board to effectuate castling action
-  '''
   if color == 'w':
     r = -1
   else:
@@ -524,28 +512,28 @@ def en_passant_possible(color, orig, moveTuple):
       return False
 
 def checkmate(color, board):
-    if inCheck(color,board):
+    if in_check(color,board):
         for k,v in pieces(color, board).items():
             squares = getsquares(k, v[-1], color, board, en_passant)
             for square in squares:
                 dummy=copy.deepcopy(board)
                 dummy[square[0]][square[1]]=v
                 dummy[k[0]][k[1]] = 'e '
-                if inCheck(color, dummy)==False:
+                if in_check(color, dummy)==False:
                     return False
         return True         
     else:    
         return False
-      
+
 def stalemate(color, board):
-    if inCheck(color,board)==False:
+    if in_check(color,board)==False:
         for k,v in pieces(color, board).items():
             squares = getsquares(k, v[-1], color, board, en_passant)
             for square in squares:
                 dummy=copy.deepcopy(board)
                 dummy[square[0]][square[1]]=v
                 dummy[k[0]][k[1]] = 'e '
-                if inCheck(color, dummy)==False:
+                if in_check(color, dummy)==False:
                     return False
         return True         
     else:    
@@ -556,23 +544,23 @@ def chess_game():
     count = 0
     en_passant=False
     prev_move, prev_piece=None,None
+    color='w'
     global wQR
     global wKR
     global wKing
     global bQR
     global bKR
     global bKing
-    while checkmate()==False:
+    print('')
+    while checkmate(color,board)==False and stalemate(color,board)==False:
         if count%2 ==0:
-            color = 'w'
             enem_color = 'b'
         else:
-            color = 'b'
             enem_color = 'w'
         print_board(color)
         move = str(input(colors[color] + ' to move: '))
-        if move == 'O-O':
-          if canCastle(color, 'O-O'):
+        if move.upper() == 'O-O':
+          if castle_legal(color, 'O-O'):
             castle_kingside(color, board)
             if color == 'w':
               wKing=1
@@ -582,8 +570,8 @@ def chess_game():
           else:
             print('Illegal move. Try again.')
             print('------------------------')
-        elif move == 'O-O-O':
-          if canCastle(color, 'O-O-O'):
+        elif move.upper() == 'O-O-O':
+          if castle_legal(color, 'O-O-O'):
             castle_queenside(color, board)
             if color == 'w':
               wKing=1
@@ -594,15 +582,15 @@ def chess_game():
             print('Illegal move. Try again.')
             print('------------------------')
         else:
-            moveTuple = ConvertAlgtoTuple(move)
 
             if move[0] in files:
                 piece = 'P'
             else:
                 piece = move[0]
             
-            if isLegalMove(move, piece, color, board, en_passant):
-                moveTuple = ConvertAlgtoTuple(move)
+            if is_legal_move(move, piece, color, board, en_passant):
+                moveTuple = convert_move(move)
+
                 if piece == 'R':
                   if getposition(move, piece, color, board)[1]==7:
                     if color == 'w':
@@ -620,7 +608,7 @@ def chess_game():
                   else:
                     bKing=1
 
-                if len(move)>3 and move[1]!='x':
+                if len(move)>3 and move[1]!='x' and '=' not in move:
                     if move[1] in files:
                       pos = files.index(move[1])
                     elif move[1] in ranks:
@@ -636,7 +624,12 @@ def chess_game():
                   orig = getposition(move, piece, color, board)
 
                 board[orig[0]][orig[1]] = 'e '
-                board[moveTuple[0]][moveTuple[1]] = color+piece
+
+                if piece == 'P' and (moveTuple[0]==-8 or moveTuple[0]==-1):
+                  promo = move[-1]
+                  board[moveTuple[0]][moveTuple[1]] = color + promo
+                else:
+                  board[moveTuple[0]][moveTuple[1]] = color+piece
                 
                 if en_passant and prev_piece == 'P':
                     if color=='w':
@@ -657,12 +650,22 @@ def chess_game():
 
                 count+=1
                 prev_move, prev_piece = moveTuple, piece
-                if inCheck(enem_color, board):
+
+                if in_check(enem_color, board):
                   print(colors[enem_color] + ' King is in check!')
+                color=enem_color
             
             else:
               print('Illegal move. Try again.')
               print('------------------------')
+
+    if color == 'b':
+      print_board('w')
+      print('Checkmate ! 1-0')
+    elif color == 'w':
+      print_board('b')
+      print('Checkmate ! 0-1')
+
 
 chess_game()
 
