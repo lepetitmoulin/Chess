@@ -78,4 +78,3 @@ Functionality to come:
 
 1. PGN reading/writing
 2. Importing an engine for single-user play against a variety of levels
-3. Accounting for positions of promoted pieces -- as of now, if there are two queens on the board, program will most likely break.
