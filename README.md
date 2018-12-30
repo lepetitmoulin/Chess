@@ -63,6 +63,6 @@ boldly strike out with the move e4, putting your pawn horizontally adjacent to m
 capture the pawn you just advanced to e4, planting itself then on e3. This move would be effected by entering 'dxe3'. If I 
 decide that it is not in my best interest to take your measly pawn, I forfeit the right to capture with en passant.
 
-As of 29 December 2018, there is no functionality for offering draws. This function will be implemented soon.
+As of 29 December 2018, there is no functionality for offering draws, nor for pawn promotion. Theses function will be implemented soon.
 
 Theoretical draws will also need to be accounted for (e.g. instances of king+knight vs. king, king+bishop vs. king, king vs. king), as well as draws by repetition (if players repeat the same moves three times each, a draw is claimed).
