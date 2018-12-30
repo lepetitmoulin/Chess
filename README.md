@@ -60,7 +60,8 @@ a horizontally adjacent square to that enemy pawn, that enemy pawn has the optio
 occupying then the square behind that pawn you just advanced. This option expires if not used after the initial pawn move. For 
 example, say that I am black and I have advanced a pawn to the d4 square, and your e-pawn remains on its starting position. You 
 boldly strike out with the move e4, putting your pawn horizontally adjacent to my pawn. My pawn would then have the right to 
-capture the pawn you just advanced to e4, planting itself then on e3. This move would be effected by entering 'dxe3'.
+capture the pawn you just advanced to e4, planting itself then on e3. This move would be effected by entering 'dxe3'. If I 
+decide that it is not in my best interest to take your measly pawn, I forfeit the right to capture with en passant.
 
 As of 29 December 2018, there is no functionality for offering draws. This function will be implemented soon.
 
