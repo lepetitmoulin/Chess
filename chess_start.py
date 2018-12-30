@@ -602,7 +602,7 @@ def chess_game():
                 piece = move[0]
             
             if isLegalMove(move, piece, color, board, en_passant):
-
+                moveTuple = ConvertAlgtoTuple(move)
                 if piece == 'R':
                   if getposition(move, piece, color, board)[1]==7:
                     if color == 'w':
