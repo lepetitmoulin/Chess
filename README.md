@@ -1,5 +1,5 @@
 # Chess
-This program implements a very simple chess program, designed as a base to develop further tools for chess study. I have made
+This program implements a very simple chess game, designed as a base to develop further tools for chess study. I have made
 every effort to optimize the visual representation of the board as moves are made, and while the representations of the pieces
 and the empty squares remains stubbornly suboptimal, it does (or will) provide the necessary functionality required to play
 through a game.
