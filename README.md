@@ -62,4 +62,6 @@ example, say that I am black and I have advanced a pawn to the d4 square, and yo
 boldly strike out with the move e4, putting your pawn horizontally adjacent to my pawn. My pawn would then have the right to 
 capture the pawn you just advanced to e4, planting itself then on e3. This move would be effected by entering 'dxe3'.
 
-As of 29 December 2018, there is no functionality for draws or for stalemates. These functions will be implemented soon.
+As of 29 December 2018, there is no functionality for offering draws. This function will be implemented soon.
+
+Theoretical draws will also need to be accounted for (e.g. instances of king+knight vs. king, king+bishop vs. king, king vs. king), as well as draws by repetition (if players repeat the same moves three times each, a draw is claimed).
