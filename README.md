@@ -66,3 +66,9 @@ decide that it is not in my best interest to take your measly pawn, I forfeit th
 As of 29 December 2018, there is no functionality for offering draws, nor for pawn promotion. Theses function will be implemented soon.
 
 Theoretical draws will also need to be accounted for (e.g. instances of king+knight vs. king, king+bishop vs. king, king vs. king), as well as draws by repetition (if players repeat the same moves three times each, a draw is claimed).
+
+30 decembre 2018:
+Functionality to come:
+
+1. PGN reading/writing
+2. Importing an engine for single-user play against a variety of levels
