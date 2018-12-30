@@ -536,6 +536,21 @@ def checkmate(color, board):
         return True         
     else:    
         return False
+      
+def stalemate(color, board):
+    if inCheck(color,board)==False:
+        for k,v in pieces(color, board).items():
+            squares = getsquares(k, v[-1], color, board, en_passant)
+            for square in squares:
+                dummy=copy.deepcopy(board)
+                dummy[square[0]][square[1]]=v
+                dummy[k[0]][k[1]] = 'e '
+                if inCheck(color, dummy)==False:
+                    return False
+        return True         
+    else:    
+        return False
+
 
 def chess_game():
     count = 0
