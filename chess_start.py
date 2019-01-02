@@ -7,6 +7,15 @@ wQR, wKR, wKing, bQR, bKR, bKing = 0,0,0,0,0,0 #weird looking -- but this is for
 en_passant = False
 colors = {'w': 'White', 'b':'Black'}
 enemies = {'w': 'b', 'b': 'w'}
+piece_symbols = {
+    "wR": u"♖", "bR": u"♜",
+    "wN": u"♘", "bN": u"♞",
+    "wB": u"♗", "bB": u"♝",
+    "wQ": u"♕", "bQ": u"♛",
+    "wK": u"♔", "bK": u"♚",
+    "wP": u"♙", "bP": u"♟",
+    'e ': '.'
+}
 
 '''
 notation for the board is reversed, and negative for the ranks
@@ -34,12 +43,12 @@ def print_board(color):
   if color=='w':
     for r in range(8):
         for f in range(8):
-            print(board[r][f], end=" ")
-        print("")
+            print(piece_symbols[board[r][f]], end=" ")
+        print('')
   else:
     for r in range(-1,-9,-1):
       for f in range(7, -1, -1):
-        print(board[r][f], end = ' ')
+        print(piece_symbols[board[r][f]], end = ' ')
       print('')
 
 def convert_move(move):
@@ -64,7 +73,7 @@ def getposition(move,piece,color, board):
     '''
     square = convert_move(move)
     mover = color + piece
-    
+
     if piece == 'N':
           squares = [(r,f) for r in range(-8,0) for f in range(len(board)) if abs(r - square[0])==2 and abs(f - square[1])==1 or abs(r - square[0])==1 and abs(f - square[1])==2]
           for i in squares:
@@ -538,7 +547,8 @@ def stalemate(color, board):
 
 
 def chess_game():
-    count = 0
+    pgn_str = ''
+    count = 2
     en_passant=False
     prev_move, prev_piece=None,None
     color='w'
@@ -554,6 +564,7 @@ def chess_game():
             enem_color = 'b'
         else:
             enem_color = 'w'
+
         print_board(color)
         move = str(input(colors[color] + ' to move: '))
 
@@ -652,7 +663,11 @@ def chess_game():
 
                 if piece=='P':
                   en_passant = en_passant_possible(color, orig, moveTuple)
-
+                
+                if count%2==0:
+                  pgn_str+=str(int(count/2))+'. ' + move
+                else:
+                  pgn_str+= ' '+move+' '
                 count+=1
                 prev_move, prev_piece = moveTuple, piece
 
@@ -665,8 +680,8 @@ def chess_game():
               print('------------------------')
 
     if checkmate(color,board):
-      emem_color = enemies[color]
-      print_board(enem_color)
+      
+      print_board(enemies[color])
       if color == 'b':
         print('Checkmate ! 1-0')
       else:
@@ -676,9 +691,7 @@ def chess_game():
       print('Stalemate ! 1/2-1/2')
     else:
       print('Draw! 1/2-1/2')
+    print(pgn_str)
 
 
 chess_game()
-
-
-
