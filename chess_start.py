@@ -1,7 +1,9 @@
 import copy #needed to make a 'dummy' board to determine if a move is legal
+import os.path #for saving purposes
 ranks = '12345678'
 files = 'abcdefgh'
 wQR, wKR, wKing, bQR, bKR, bKing = 0,0,0,0,0,0 #weird looking -- but this is for castling purposes !
+
 
 
 en_passant = False
@@ -337,7 +339,7 @@ def getsquares(pos,piece,color, board, en_passant=False):
 
 def is_legal_move(move, piece, color, board, en_passant):
     current = getposition(move,piece,color, board)
-    if current==[]:
+    if current==[] or current is None:
       return False
     squares = getsquares(current,piece,color, board, en_passant)
     move_tuple = convert_move(move)
@@ -517,6 +519,15 @@ def queen_count(color, board):
       count+=1
   return count
 
+def insufficient_material(board):
+  wpieces = [piece for piece in pieces('w',board).values() if 'K' not in piece]
+  bpieces = [piece for piece in pieces('b',board).values() if 'K' not in piece]
+  if len(wpieces)<=1 and len(bpieces)<=1:
+    if (wpieces==['wN'] or wpieces==['wB'] or wpieces==[]) and (bpieces==['bN'] or bpieces==['bB'] or bpieces==[]):
+      return True
+  else:
+    return False
+
 def checkmate(color, board):
     if in_check(color,board):
         for k,v in pieces(color, board).items():
@@ -674,6 +685,9 @@ def chess_game():
                 if in_check(enem_color, board):
                   print(colors[enem_color] + ' King is in check!')
                 color=enem_color
+
+                if insufficient_material(board):
+                  print('Insufficient material. Draw.')
             
             else:
               print('Illegal move. Try again.')
@@ -692,6 +706,23 @@ def chess_game():
     else:
       print('Draw! 1/2-1/2')
     print(pgn_str)
+    
+    to_save = str(input('Do you want to save this game? ')).lower()
+    
+    if to_save=='y' or to_save=='yes':
+      while True:
+        name = str(input('Please name the file: '))
+        filename = name+'.pgn'
+        if os.path.isfile(filename):
+          print('Filename already exists')
+        else:
+          f= open(filename, 'w')
+          f.write(pgn_str)
+          print('Game saved in '+os.getcwd()+' as '+ filename)
+          break
 
+    else:
+      print('OK!')
 
 chess_game()
+
