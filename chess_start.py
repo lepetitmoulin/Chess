@@ -7,6 +7,15 @@ wQR, wKR, wKing, bQR, bKR, bKing = 0,0,0,0,0,0 #weird looking -- but this is for
 en_passant = False
 colors = {'w': 'White', 'b':'Black'}
 enemies = {'w': 'b', 'b': 'w'}
+piece_symbols = {
+    "wR": u"♖", "bR": u"♜",
+    "wN": u"♘", "bN": u"♞",
+    "wB": u"♗", "bB": u"♝",
+    "wQ": u"♕", "bQ": u"♛",
+    "wK": u"♔", "bK": u"♚",
+    "wP": u"♙", "bP": u"♟",
+    'e ': '.'
+}
 
 '''
 notation for the board is reversed, and negative for the ranks
@@ -34,12 +43,12 @@ def print_board(color):
   if color=='w':
     for r in range(8):
         for f in range(8):
-            print(board[r][f], end=" ")
-        print("")
+            print(piece_symbols[board[r][f]], end=" ")
+        print('')
   else:
     for r in range(-1,-9,-1):
       for f in range(7, -1, -1):
-        print(board[r][f], end = ' ')
+        print(piece_symbols[board[r][f]], end = ' ')
       print('')
 
 def convert_move(move):
@@ -64,15 +73,12 @@ def getposition(move,piece,color, board):
     '''
     square = convert_move(move)
     mover = color + piece
+
     if piece == 'N':
-          pos_knight = []
           squares = [(r,f) for r in range(-8,0) for f in range(len(board)) if abs(r - square[0])==2 and abs(f - square[1])==1 or abs(r - square[0])==1 and abs(f - square[1])==2]
           for i in squares:
               if board[i[0]][i[1]] == mover:
-                  pos_knight.append(i[0])
-                  pos_knight.append(i[1])
-                  break
-          return pos_knight
+                  return i
     elif piece == 'P':
         pos_pawn = []
         if color == 'w':
@@ -114,39 +120,32 @@ def getposition(move,piece,color, board):
           squares = [(r,f) for r in range(-8,0) for f in range(len(board)) if r-f == d or r+f==s]
           for i in squares:
               if  board[i[0]][i[1]] == mover:
-                  pos_bishop.append(i[0])
-                  pos_bishop.append(i[1])
-                  break
-          return pos_bishop
+                  return i
     elif piece == 'R':
         squares = [(r,square[1]) for r in range(-8,0)] + [(square[0], f) for f in range(8)]
-        pos_rook = []
         for i in squares:
           #same vertical line
           if board[i[0]][i[1]] == mover and board[i[0] + 1][i[1]]== mover:
               if abs(i[0]) < abs(square[0]):
-                  pos_rook.append(i[0])
-                  pos_rook.append(i[1])
+                  return i
               else:
-                  pos_rook.append(i[0] + 1)
-                  pos_rook.append(i[1])
-              break
+                  return(i[0], i[1]+1)
+            
           #same horizontal
           elif i[1] < 7 and board[i[0]][i[1]] == mover and board[i[0]][i[1]+1]== mover:
               if i[1] < square[1]:
-                  pos_rook.append(i[0])
-                  pos_rook.append(i[1]+1)
+                  return(i[0], i[1]+1)
               else:
-                  pos_rook.append(i[0])
-                  pos_rook.append(i[1])
-              break
+                  return i
           elif board[i[0]][i[1]] == mover and is_clear_path(square, (i[0],i[1])):
-              pos_rook.append(i[0])
-              pos_rook.append(i[1])
-              break
-        return pos_rook
+              return i
+    elif piece=='Q' and queen_count(color,board)>1:
+        #finding queen in the case that there is more than one queen
+        for k,v in pieces(color,board).items():
+          if 'Q' in v and is_clear_path(square,k):
+            return k
     else:
-        #finding king or queen
+        #finding king and queen
         for k,v in pieces(color, board).items():
           if piece in v:
             return k
@@ -511,6 +510,13 @@ def en_passant_possible(color, orig, moveTuple):
     else:
       return False
 
+def queen_count(color, board):
+  count = 0
+  for v in pieces(color,board).values():
+    if 'Q' in v:
+      count+=1
+  return count
+
 def checkmate(color, board):
     if in_check(color,board):
         for k,v in pieces(color, board).items():
@@ -541,7 +547,8 @@ def stalemate(color, board):
 
 
 def chess_game():
-    count = 0
+    pgn_str = ''
+    count = 2
     en_passant=False
     prev_move, prev_piece=None,None
     color='w'
@@ -557,8 +564,10 @@ def chess_game():
             enem_color = 'b'
         else:
             enem_color = 'w'
+
         print_board(color)
         move = str(input(colors[color] + ' to move: '))
+
         if move.upper() == 'O-O':
           if castle_legal(color, 'O-O'):
             castle_kingside(color, board)
@@ -581,6 +590,13 @@ def chess_game():
           else:
             print('Illegal move. Try again.')
             print('------------------------')
+        elif move.lower() == 'draw':
+          response = str(input('Opponent offers draw. Accept? '))
+          if response.lower() == 'y' or response.lower()=='yes':
+            print('Draw agreed.')
+            break
+          else:
+            print('Draw offer declined.')
         else:
 
             if move[0] in files:
@@ -647,7 +663,11 @@ def chess_game():
 
                 if piece=='P':
                   en_passant = en_passant_possible(color, orig, moveTuple)
-
+                
+                if count%2==0:
+                  pgn_str+=str(int(count/2))+'. ' + move
+                else:
+                  pgn_str+= ' '+move+' '
                 count+=1
                 prev_move, prev_piece = moveTuple, piece
 
@@ -659,15 +679,19 @@ def chess_game():
               print('Illegal move. Try again.')
               print('------------------------')
 
-    if color == 'b':
-      print_board('w')
-      print('Checkmate ! 1-0')
-    elif color == 'w':
-      print_board('b')
-      print('Checkmate ! 0-1')
+    if checkmate(color,board):
+      
+      print_board(enemies[color])
+      if color == 'b':
+        print('Checkmate ! 1-0')
+      else:
+        print('Checkmate ! 0-1')
+    elif stalemate(color,board):
+      print_board(color)
+      print('Stalemate ! 1/2-1/2')
+    else:
+      print('Draw! 1/2-1/2')
+    print(pgn_str)
 
 
 chess_game()
-
-
-
